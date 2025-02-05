@@ -9,16 +9,16 @@ public class Driver {
 	public static void main(String[] args) {
 		
 	   	
-	   	 /*******************************************************************************************************************************************
-	   	  * TODO : implement all the operations of main class   																					*
-	   	  ******************************************************************************************************************************************/
+	/*******************************************************************************************************************************************
+	* TODO : implement all the operations of main class   																					*
+	******************************************************************************************************************************************/
 	    
-		// Initialize all the threads
+	// Initialize all the threads
 		
-	   	Network network = new Network("network");		/* Activate the network */
-	    network.start();
+	Network network = new Network("network");		/* Activate the network */
+	network.start();
 	    
-	    Server server = new Server();                        /* Start the server */ 
+	Server server = new Server();                        /* Start the server */ 
         server.start();
         
         Client clientSend = new Client("sending");              /* Start the sending client */
