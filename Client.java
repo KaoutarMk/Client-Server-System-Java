@@ -129,7 +129,7 @@ public class Client extends Thread {
 	    }
 	    setNumberOfTransactions(i);		/* Record the number of transactions processed */
 	    
-	    System.out.println("\n DEBUG : Client.readTransactions() - " + getNumberOfTransactions() + " transactions processed");
+	    // System.out.println("\n DEBUG : Client.readTransactions() - " + getNumberOfTransactions() + " transactions processed");
 	    
 	    inputStream.close( );
 
@@ -151,7 +151,7 @@ public class Client extends Thread {
 	    	
 	    	objNetwork.send(transaction[i]);                            /* Transmit current transaction */                                    	
 	        transaction[i].setTransactionStatus("sent");   /* Set current transaction status */
-	        System.out.println("\n DEBUG : Client.sendTransactions() - sending transaction on account " + transaction[i].getAccountNumber());
+	        // System.out.println("\n DEBUG : Client.sendTransactions() - sending transaction on account " + transaction[i].getAccountNumber());
 	        i++;
 	     }
 	     
@@ -173,7 +173,7 @@ public class Client extends Thread {
 	                                                                       	
 	        objNetwork.receive(transact);                               	/* Receive updated transaction from the network buffer */
 	        System.out.println(transact);                               	/* Display updated transaction */
-	        System.out.println("\n DEBUG : Client.receiveTransactions() - receiving updated transaction on account " + transact.getAccountNumber());   
+	        // System.out.println("\n DEBUG : Client.receiveTransactions() - receiving updated transaction on account " + transact.getAccountNumber());   
 	        i++;
 	     } 
 	}
@@ -196,7 +196,7 @@ public class Client extends Thread {
 	 */
 	public void run()
 	{   
-	   	Transactions transact = new Transactions();
+	   	Transactions transaction = new Transactions();
 	   	long sendClientStartTime, sendClientEndTime, receiveClientStartTime, receiveClientEndTime;
 
 	   	/* Implement here the code for the run method ... */
@@ -210,14 +210,14 @@ public class Client extends Thread {
 	    }
 	    else if (getClientOperation().equals("receiving")){
 	        receiveClientStartTime = System.currentTimeMillis();
-	        receiveTransactions(transact);
+	        receiveTransactions(transaction);
 	        receiveClientEndTime = System.currentTimeMillis();
 	        System.out.println("\n Terminating client receiving thread - Running time " +(receiveClientEndTime-receiveClientStartTime) +" milliseconds");
 	        objNetwork.disconnect(objNetwork.getClientIP());
 	    }
 	    else{
-	        System.exit(0);
+	    	System.out.println("*** ERROR ***\n	Invalid client operation type!");
+	        System.exit(1);
 	    }
 	}
 }
-
