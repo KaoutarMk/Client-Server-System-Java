@@ -142,4 +142,3 @@ public class Accounts {
 			return ("\n Account number " + getAccountNumber() + "Account type " + getAccountType() + "First name " + getFirstName() + "Last Name " + getLastName() + "Balance " + getBalance());
 		}
 }
-
