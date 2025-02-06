@@ -1,169 +1,321 @@
-
 package main;
 
-public class Transactions {
+import java.util.Scanner;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.InputMismatchException;
 
-	private String accountNumber;       /* Account number */
-	private String operationType;       /* Operation type : deposit, withdrawal, query */
-	private double transactionAmount;   /* Amount to deposit or withdraw */
-	private double transactionBalance;  /* Account balance after transaction */
-	private String transactionError;    /* Transaction error : NSF, invalid amount, invalind account, none */
-	private String transactionStatus;   /* Current transaction status : pending, sent, received, transferred, done */
+public class Server extends Thread{
 
-	/** Constructor method of Transactions class
-	     * 
-	     * @return
-	     * @param
-	     */
-	Transactions()
-	{
-	    accountNumber = " ";
-	    operationType = " ";
-	    transactionAmount = 0.00;
-	    transactionBalance = 0.00;
-	    transactionError = "none";
-	    transactionStatus = " ";
-	}
-
-	 /**
-	  *  Accessor method of Transactions class
-	 * 
-	 * @return accountNumber
-	 * @param
-	 */
-	 public String getAccountNumber()
-	 {
-	     return accountNumber;
-	 }
-	     
-	/**
-	 *  Mutator method of Transactions class
+	int numberOfTransactions;         /* Number of transactions handled by the server */
+	int numberOfAccounts;             /* Number of accounts stored in the server */
+	int maxNbAccounts;                /* maximum number of transactions */
+	Transactions transaction;         /* Transaction being processed */
+	Network objNetwork;               /* Server object to handle network operations */
+	Accounts [] account;              /* Accounts to be accessed or updated */
+	  
+	/** 
+	 * Constructor method of Client class
 	 * 
 	 * @return 
+	 * @param
+	 */
+	Server()
+	{
+	  System.out.println("\n Initializing the server ...");
+	  numberOfTransactions = 0;
+	  numberOfAccounts = 0;
+	  maxNbAccounts = 100;
+	  transaction = new Transactions();
+	  account = new Accounts[maxNbAccounts];
+	  objNetwork = new Network("server");
+	  System.out.println("\n Inializing the Accounts database ...");
+	  initializeAccounts( );
+	  System.out.println("\n Connecting server to network ...");
+	  if (!(objNetwork.connect(objNetwork.getServerIP())))
+	  {
+	    System.out.println("\n Terminating server application, network unavailable");
+	    System.exit(0);
+	  }
+	}
+	  
+	/** 
+	 * Accessor method of Server class
+	 * 
+	 * @return numberOfTransactions
+	 * @param
+	 */
+	 public int getNumberOfTransactions()
+	 {
+	     return numberOfTransactions;
+	 }
+	     
+	/** 
+	 * Mutator method of Server class
+	 * 
+	 * @return 
+	 * @param nbOfTrans
+	 */
+	 public void setNumberOfTransactions(int nbOfTrans)
+	 { 
+	     numberOfTransactions = nbOfTrans;
+	 }
+
+	/** 
+	 * Accessor method of Server class
+	 * 
+	 * @return numberOfAccounts
+	 * @param
+	 */
+	 public int getNumberOfAccounts()
+	 {
+	     return numberOfAccounts;
+	 }
+	     
+	/** 
+	 * Mutator method of Server class
+	 * 
+	 * @return 
+	 * @param nbOfAcc
+	 */
+	 public void setNumberOfAccounts(int nbOfAcc)
+	 { 
+	     numberOfAccounts = nbOfAcc;
+	 }
+	     
+	 /** 
+	  * Accessor method of Server class
+	  * 
+	  * @return maxNbAccounts
+	  * @param
+	  */
+	  public int getmMxNbAccounts()
+	  {
+	      return maxNbAccounts;
+	  }
+	      
+	 /** 
+	  * Mutator method of Server class
+	  * 
+	  * @return 
+	  * @param nbOfAcc
+	  */
+	  public void setMaxNbAccounts(int nbOfAcc)
+	  { 
+	   	  maxNbAccounts = nbOfAcc;
+	  }
+
+	/** 
+	 * Initialization of the accounts from an input file
+	 * 
+	 * @return 
+	 * @param
+	 */  
+	 public void initializeAccounts()
+	 {
+	    Scanner inputStream = null; /* accounts input file stream */
+	    int i = 0;                  /* index of accounts array */
+	    
+	    try
+	    {
+	     inputStream = new Scanner(new FileInputStream("account.txt"));
+	    }
+	    catch(FileNotFoundException e)
+	    {
+	        System.out.println("File account.txt was not found");
+	        System.out.println("or could not be opened.");
+	        System.exit(0);
+	    }
+	    while (inputStream.hasNextLine())
+	    {
+	        try
+	        {   account[i] = new Accounts();
+	            account[i].setAccountNumber(inputStream.next());    /* Read account number */
+	            account[i].setAccountType(inputStream.next());      /* Read account type */
+	            account[i].setFirstName(inputStream.next());        /* Read first name */
+	            account[i].setLastName(inputStream.next());         /* Read last name */
+	            account[i].setBalance(inputStream.nextDouble());    /* Read account balance */                
+	        }
+	        catch(InputMismatchException e)
+	        {
+	            System.out.println("Line " + i + "file account.txt invalid input");
+	            System.exit(0);
+	        }
+	        i++;
+	    }
+	    setNumberOfAccounts(i);			/* Record the number of accounts processed */
+	    
+	    // System.out.println("\n DEBUG : Server.initializeAccounts() " + getNumberOfAccounts() + " accounts processed");
+	    
+	    inputStream.close( );
+	 }
+	     
+	/** 
+	 * Find and return the index position of an account 
+	 * 
+	 * @return account index position or -1
 	 * @param accNumber
 	 */
-	 public void setAccountNumber(String accNumber)
-	 { 
-	     accountNumber = accNumber;
-	 }
-	 
-	/**
-	 *  Accessor method of Transactions class
-	 * 
-	 * @return operationType
-	 * @param
-	 */
-	 public String getOperationType()
+	 public int findAccount(String accNumber)
 	 {
-	     return operationType;
-	 }
+	     int i = 0;
 	     
-	/**
-	 *  Mutator method of Transactions class
-	 * 
-	 * @return 
-	 * @param opType
-	 */
-	 public void setOperationType(String opType)
-	 { 
-	     operationType = opType;
-	 }
-	 
-	/**
-	 *  Accessor method of Transactions class
-	 * 
-	 * @return transactionAmount
-	 * @param
-	 */
-	 public double getTransactionAmount()
-	 {
-	     return transactionAmount;
-	 }
-	     
-	/**
-	 *  Mutator method of Transactions class
-	 * 
-	 * @return 
-	 * @param transmount
-	 */
-	 public void setTransactionAmount(double transAmount)
-	 { 
-	     transactionAmount = transAmount;
-	 }
-	 
-	/**
-	 *  Accessor method of Transactions class
-	 * 
-	 * @return transactionBalance
-	 * @param
-	 */
-	 public double getTransactionBalance()
-	 {
-	     return transactionBalance;
-	 }
-	     
-	/**
-	 *  Mutator method of Transactions class
-	 * 
-	 * @return 
-	 * @param transBalance
-	 */
-	 public void setTransactionBalance(double transBalance)
-	 { 
-	     transactionBalance = transBalance;
-	 }
-	 
-	/**
-	 *  Accessor method of Transactions class
-	 * 
-	 * @return transactionError
-	 * @param
-	 */
-	 public String getTransactionError()
-	 {
-	     return transactionError;
+	     /* Find account */
+	     while ( !(account[i].getAccountNumber().equals(accNumber)))
+	         i++;
+	     if (i == getNumberOfAccounts())
+	         return -1;
+	     else
+	         return i;
 	 }
 	 
 	/** 
-	 * Mutator method of Transactions class
+	 * Processing of the transactions
 	 * 
 	 * @return 
-	 * @param transError
+	 * @param trans
 	 */
-	 public void setTransactionError(String transError)
-	 { 
-	     transactionError = transError;
+	 public boolean processTransactions(Transactions trans)
+	 {   int accIndex;             	/* Index position of account to update */
+	     double newBalance; 		/* Updated account balance */
+	          
+	     /* Process the accounts until the client disconnects */
+	     while ((!objNetwork.getClientConnectionStatus().equals("disconnected")))
+	     { 
+	    	 while((objNetwork.getInBufferStatus().equals("empty")) && !objNetwork.getClientConnectionStatus().equals("disconnected")){
+	    		 /* Alternatively, busy-wait until the network input buffer is available */
+                 Thread.yield();
+             }
+	       	 
+	       	 if (!objNetwork.getInBufferStatus().equals("empty"))
+	       	 {
+	       		 // System.out.println("\n DEBUG : Server.processTransactions() - transferring in account " + trans.getAccountNumber());
+	       		 
+	       		 objNetwork.transferIn(trans);                              /* Transfer a transaction from the network input buffer */
+	         
+	       		 accIndex = findAccount(trans.getAccountNumber());
+	       		 /* Process deposit operation */
+	       		 if (trans.getOperationType().equals("DEPOSIT"))
+	       		 {
+	       			 newBalance = deposit(accIndex, trans.getTransactionAmount()); 
+	       			 trans.setTransactionBalance(newBalance);
+	       			 trans.setTransactionStatus("done");
+	       			 
+	       			 // System.out.println("\n DEBUG : Server.processTransactions() - Deposit of " + trans.getTransactionAmount() + " in account " + trans.getAccountNumber());
+	       		 }
+	       		 else
+	       			 /* Process withdraw operation */
+	       			 if (trans.getOperationType().equals("WITHDRAW"))
+	       			 {
+	       				 newBalance = withdraw(accIndex, trans.getTransactionAmount());
+	       				 trans.setTransactionBalance(newBalance);
+	       				 trans.setTransactionStatus("done");
+	       				 
+	       				 // System.out.println("\n DEBUG : Server.processTransactions() - Withdrawal of " + trans.getTransactionAmount() + " from account " + trans.getAccountNumber());
+	       			 }
+	       			 else
+	       				 /* Process query operation */
+	       				 if (trans.getOperationType().equals("QUERY"))
+	       				 {
+	                        newBalance = query(accIndex);
+	                        trans.setTransactionBalance(newBalance);
+	                        trans.setTransactionStatus("done");
+	                        
+	                        // System.out.println("\n DEBUG : Server.processTransactions() - Obtaining balance from account" + trans.getAccountNumber());
+	       				 } 
+	       		        		 
+	       		 while( (objNetwork.getOutBufferStatus().equals("full")))
+	       			Thread.yield(); /* Alternatively,  busy-wait until the network output buffer is available */
+	                                                       
+	       		 // System.out.println("\n DEBUG : Server.processTransactions() - transferring out account " + trans.getAccountNumber());
+	       		 
+	       		 objNetwork.transferOut(trans);                            		/* Transfer a completed transaction from the server to the network output buffer */
+	       		 setNumberOfTransactions( (getNumberOfTransactions() +  1) ); 	/* Count the number of transactions processed */
+	       	 }
+	     }
+	     
+	     // System.out.println("\n DEBUG : Server.processTransactions() - " + getNumberOfTransactions() + " accounts updated");
+	          
+	     return true;
 	 }
-	 
-	/**
-	 *  Accessor method of Transactions class
+	     
+	/** 
+	 * Processing of a deposit operation in an account
 	 * 
-	 * @return transactionStatus
-	 * @param
+	 * @return balance
+	 * @param i, amount
 	 */
-	 public String getTransactionStatus()
-	 {
-	     return transactionStatus;
+	 public double deposit(int i, double amount)
+	 {  double curBalance;      /* Current account balance */
+	    
+	    curBalance = account[i].getBalance( );          /* Get current account balance */
+	    account[i].setBalance(curBalance + amount);     /* Deposit amount in the account */
+	    return account[i].getBalance ();                /* Return updated account balance */
 	 }
-	 
+	     
 	/**
-	 *  Mutator method of Transactions class
+	 *  Processing of a withdrawal operation in an account
 	 * 
-	 * @return 
-	 * @param transStatus
+	 * @return balance
+	 * @param i, amount
 	 */
-	 public void setTransactionStatus(String transStatus)
-	 { 
-	     transactionError = transStatus;
+	 public double withdraw(int i, double amount)
+	 {  double curBalance;      /* Current account balance */
+	    
+	    curBalance = account[i].getBalance( );          /* Get current account balance */
+	    account[i].setBalance(curBalance - amount);     /* Withdraw amount in the account */
+	    return account[i].getBalance ();                /* Return updated account balance */
 	 }
-	 
+
 	/**
-	 *  Create a String representation based on the Transactions Object
+	 *  Processing of a query operation in an account
+	 * 
+	 * @return balance
+	 * @param i
+	 */
+	 public double query(int i)
+	 {  double curBalance;      /* Current account balance */
+	    
+	    curBalance = account[i].getBalance( );          /* Get current account balance */
+	    return curBalance;                              /* Return current account balance */
+	 }
+	     
+	 /**
+	  *  Create a String representation based on the Server Object
 	 * 
 	 * @return String representation
 	 */
-	public String toString() 
-	{
-	   	return ("\n Account number " + getAccountNumber() + " Account Balance " + getTransactionBalance() + " Message " + getTransactionError());
+	 public String toString() 
+	 {	
+	   	 return ("\n server IP " + objNetwork.getServerIP() + "connection status " + objNetwork.getServerConnectionStatus() + "Number of accounts " + getNumberOfAccounts());
+	 }
+	 
+	 /* *********************************************************************************************************************************************
+	  * TODO : implement the method Run() to execute the server thread				 																*
+	  * *********************************************************************************************************************************************/
+	 
+	/**
+	 * Code for the run method
+	 * 
+	 * @return 
+	 * @param
+	 */
+	public void run()
+	{   Transactions trans = new Transactions();
+	   	long serverStartTime, serverEndTime;
+
+	   	// System.out.println("\n DEBUG : Server.run() - starting server thread " + objNetwork.getServerConnectionStatus());
+	   	
+	   	/* Implement the code for the run method */
+	   	
+	   	serverStartTime = System.currentTimeMillis();
+    	processTransactions(trans);
+    	serverEndTime = System.currentTimeMillis();
+    	
+	    System.out.println("\n Terminating server thread - " + " Running time " + (serverEndTime - serverStartTime) + " milliseconds");
+	    
+	    // Disconnecting server from network
+    	objNetwork.disconnect(objNetwork.getServerIP());
+    	
 	}
 }
